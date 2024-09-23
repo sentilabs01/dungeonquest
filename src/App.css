@@ -1,0 +1,147 @@
+/* Custom styles for player and maze cells (can be added in a separate CSS file if needed) */
+
+
+/* Ensure all images (walls, exits, and players) scale properly */
+img {
+  object-fit: cover;
+  display: block;
+}
+
+
+/* Centering and full height layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+
+#root {
+  height: 100%;
+}
+
+
+.flex {
+  display: flex;
+}
+
+
+.flex-col {
+  flex-direction: column;
+}
+
+
+.items-center {
+  align-items: center;
+}
+
+
+.justify-center {
+  justify-content: center;
+}
+
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+
+/* Add background image properties */
+.bg-cover {
+  background-size: cover;
+}
+
+
+.bg-center {
+  background-position: center;
+}
+
+
+/* Maze and grid-related classes */
+.maze-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.maze-row {
+  display: flex;
+}
+
+
+.maze-cell {
+  width: 40px;  /* Adjustable based on your requirements */
+  height: 40px; /* Adjustable based on your requirements */
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+
+.player-image {
+  width: 90px;  /* Adjustable based on your requirements */
+  height: 90px; /* Adjustable based on your requirements */
+  position: absolute;
+}
+
+
+.wall-image,
+.exit-image {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* Center logo with appropriate size */
+img {
+  object-fit: cover;
+  display: block;
+}
+
+
+/* Ensure all images scale properly */
+img {
+  object-fit: cover;
+  display: block;
+}
+
+/* Logo specific styles */
+.logo {
+  width: 500px;  /* Make the logo 5x bigger */
+  height: 500px;
+  object-fit: contain; /* Maintain aspect ratio */
+  z-index: 10; /* Ensure it appears above other elements */
+  position: relative; /* Ensure z-index works */
+}
+
+
+
+
+/* Ensure the button and text are clearly visible */
+button {
+  background-color: #6c757d;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #5a6268;
+}
+
+.text-2xl {
+  color: white;
+}
+
+
+body {
+  background-image: url("/castle-hall1.jpg"); /* The path is relative to the public folder */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
