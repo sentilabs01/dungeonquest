@@ -1,38 +1,168 @@
-.App {
-  text-align: center;
+import React, { useState, useEffect, useRef } from 'react';
+import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react';
+
+const PLAYER_SIZE = '3rem';
+const MAZE_SIZE = 8;
+const MONSTER_PROBABILITY = 0.4; // Increased to 40% chance for easier testing
+
+const monsterVideos = [
+  "/Ernie+monster+level+1+video+-+Made+with+Clipchamp.mp4",
+  "/Ernie+Level+2+video+-+Made+with+Clipchamp.mp4",
+  "/Ernie+3+video+-+Made+with+Clipchamp.mp4",
+  "/bert+level+1+monster+video+-+Made+with+Clipchamp.mp4",
+  "/chad+monster+video+-+Made+with+Clipchamp.mp4",
+  "/GeorgeOrc+-+Made+with+Clipchamp.mp4"
+];
+
+const MazeSquare = ({ type, isPlayer, monster, isExplored }) => (
+  <div
+    className={`w-12 h-12 border border-gray-800 relative ${isExplored ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+    style={{
+      backgroundImage: type === 'wall'
+        ? "url('/gameboard background.jpg')"
+        : "url('/passage left.jpg')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}
+  >
+    {isPlayer && (
+      <img
+        src="/AidenPNG.png"
+        alt="Hero"
+        className="player-character"
+        style={{
+          width: PLAYER_SIZE,
+          height: PLAYER_SIZE,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+    )}
+    {monster && (
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ zIndex: 10 }}
+      >
+        <video
+          src={monster}
+          autoPlay
+          loop
+          muted
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
+    )}
+  </div>
+);
+
+const Board = ({ board, playerPosition, monsters, exploredSquares }) => (
+  <div className="grid gap-0 border-4 border-gray-800 p-2 bg-gray-300 rounded-lg shadow-lg"
+       style={{ gridTemplateColumns: `repeat(${MAZE_SIZE}, minmax(0, 1fr))` }}>
+    {board.map((row, i) =>
+      row.map((cell, j) => (
+        <MazeSquare
+          key={`${i}-${j}`}
+          type={cell}
+          isPlayer={playerPosition[0] === i && playerPosition[1] === j}
+          monster={monsters[i][j]}
+          isExplored={exploredSquares.has(`${i},${j}`)}
+        />
+      ))
+    )}
+  </div>
+);
+
+// ... [DiceRoll and ControlButtons components remain unchanged]
+
+const generateMaze = (size) => {
+  // ... [generateMaze function remains unchanged]
+};
+
+function App() {
+  const [playerPosition, setPlayerPosition] = useState([0, 0]);
+  const [board, setBoard] = useState(generateMaze(MAZE_SIZE));
+  const [monsters, setMonsters] = useState(Array(MAZE_SIZE).fill(null).map(() => Array(MAZE_SIZE).fill(null)));
+  const [movesLeft, setMovesLeft] = useState(0);
+  const [exploredSquares, setExploredSquares] = useState(new Set(['0,0']));
+
+  const spawnMonster = (x, y) => {
+    if (Math.random() < MONSTER_PROBABILITY && !exploredSquares.has(`${x},${y}`)) {
+      const newMonsters = [...monsters];
+      const monsterVideo = monsterVideos[Math.floor(Math.random() * monsterVideos.length)];
+      newMonsters[x][y] = monsterVideo;
+      setMonsters(newMonsters);
+      console.log(`Monster spawned at (${x}, ${y}) with video: ${monsterVideo}`);
+    } else {
+      console.log(`No monster spawned at (${x}, ${y})`);
+    }
+  };
+
+  const exploreAdjacentSquares = (x, y) => {
+    const adjacentSquares = [
+      [x-1, y], [x+1, y], [x, y-1], [x, y+1]
+    ];
+    
+    const newExploredSquares = new Set(exploredSquares);
+    
+    adjacentSquares.forEach(([adjX, adjY]) => {
+      if (adjX >= 0 && adjX < MAZE_SIZE && adjY >= 0 && adjY < MAZE_SIZE) {
+        const squareKey = `${adjX},${adjY}`;
+        if (!newExploredSquares.has(squareKey)) {
+          newExploredSquares.add(squareKey);
+          console.log(`Exploring square (${adjX}, ${adjY})`);
+          if (board[adjX][adjY] === 'path') {
+            spawnMonster(adjX, adjY);
+          }
+        }
+      }
+    });
+    
+    setExploredSquares(newExploredSquares);
+  };
+
+  const movePlayer = (newPosition) => {
+    const [x, y] = newPosition;
+    setPlayerPosition(newPosition);
+    setMovesLeft(prevMoves => prevMoves - 1);
+    
+    // Mark the current and adjacent squares as explored
+    exploreAdjacentSquares(x, y);
+
+    // Remove monster if player moves to its square
+    if (monsters[x][y]) {
+      const newMonsters = [...monsters];
+      newMonsters[x][y] = null;
+      setMonsters(newMonsters);
+      console.log(`Monster removed at (${x}, ${y})`);
+    }
+  };
+
+  // ... [handleKeyPress, handleRoll, and handleMove functions remain unchanged]
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [playerPosition, board, movesLeft, monsters, exploredSquares]);
+
+  return (
+    <div className="App container mx-auto p-4 min-h-screen flex flex-col justify-center items-center bg-gray-100">
+      <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Legend of the Minotaur</h1>
+      <div className="flex flex-col md:flex-row justify-center items-center w-full">
+        <Board board={board} playerPosition={playerPosition} monsters={monsters} exploredSquares={exploredSquares} />
+        <DiceRoll onRoll={handleRoll} />
+      </div>
+      <ControlButtons onMove={handleMove} />
+      <p className="mt-4 text-lg font-semibold">Moves left: {movesLeft}</p>
+    </div>
+  );
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+export default App;
